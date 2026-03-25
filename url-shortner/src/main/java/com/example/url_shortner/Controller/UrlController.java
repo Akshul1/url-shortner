@@ -1,6 +1,8 @@
 package com.example.url_shortner.Controller;
 
 import com.example.url_shortner.Entity.UrlMapping;
+import com.example.url_shortner.Exception.InvalidUrlException;
+import com.example.url_shortner.Exception.UrlNotFoundException;
 import com.example.url_shortner.Service.UrlService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,7 +22,7 @@ public class UrlController {
     public ResponseEntity<UrlMapping> shortenUrl(@RequestBody Map<String, String> request) {
         String originalUrl = request.get("url");
         if (originalUrl == null || originalUrl.isEmpty()) {
-            return ResponseEntity.badRequest().build();
+            throw new InvalidUrlException("The provided URL is empty or invalid.");
         }
         UrlMapping savedMapping = urlService.shortenUrl(originalUrl);
         return new ResponseEntity<>(savedMapping, HttpStatus.CREATED);
@@ -29,13 +31,14 @@ public class UrlController {
     // REDIRECT ENDPOINT
     @GetMapping("/{shortCode}")
     public ResponseEntity<Void> redirectToOriginal(@PathVariable String shortCode) {
-        UrlMapping mapping = urlService.getOriginalUrl(shortCode); // Increments count
-        if (mapping != null) {
-            return ResponseEntity.status(HttpStatus.FOUND)
-                    .header("Location", mapping.getOriginalUrl())
-                    .build();
+        UrlMapping mapping = urlService.getOriginalUrl(shortCode);
+        if (mapping == null) {
+            // This will now be caught by your GlobalExceptionHandler
+            throw new UrlNotFoundException("Short code " + shortCode + " not found!");
         }
-        return ResponseEntity.notFound().build();
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header("Location", mapping.getOriginalUrl())
+                .build();
     }
 
     // STATS ENDPOINT
