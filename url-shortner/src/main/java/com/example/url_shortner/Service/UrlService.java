@@ -3,6 +3,7 @@ package com.example.url_shortner.Service;
 import com.example.url_shortner.Entity.UrlMapping;
 import com.example.url_shortner.Repository.UrlRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class UrlService {
     }
 
     // This method is for REDIRECTION (Increments count)
+    @Cacheable(value = "urls", key = "#shortCode")
     public UrlMapping getOriginalUrl(String shortCode) {
         UrlMapping mapping = urlRepo.findByShortCode(shortCode);
 
