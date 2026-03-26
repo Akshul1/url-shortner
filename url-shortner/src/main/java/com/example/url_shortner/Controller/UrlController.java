@@ -1,9 +1,11 @@
 package com.example.url_shortner.Controller;
 
+import com.example.url_shortner.DTO.ShortenUrlRequest;
 import com.example.url_shortner.Entity.UrlMapping;
 import com.example.url_shortner.Exception.InvalidUrlException;
 import com.example.url_shortner.Exception.UrlNotFoundException;
 import com.example.url_shortner.Service.UrlService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +21,8 @@ public class UrlController {
     private final UrlService urlService;
 
     @PostMapping("/shorten")
-    public ResponseEntity<UrlMapping> shortenUrl(@RequestBody Map<String, String> request) {
-        String originalUrl = request.get("url");
-        if (originalUrl == null || originalUrl.isEmpty()) {
-            throw new InvalidUrlException("The provided URL is empty or invalid.");
-        }
-        UrlMapping savedMapping = urlService.shortenUrl(originalUrl);
+    public ResponseEntity<UrlMapping> shortenUrl(@Valid @RequestBody ShortenUrlRequest request) {
+        UrlMapping savedMapping = urlService.shortenUrl(request.getUrl());
         return new ResponseEntity<>(savedMapping, HttpStatus.CREATED);
     }
 
